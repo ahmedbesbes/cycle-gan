@@ -30,6 +30,7 @@ parser.add_argument('--output_nc', type=int, default=3, help='number of channels
 parser.add_argument('--cuda', action='store_true', help='use GPU computation')
 parser.add_argument('--n_cpu', type=int, default=8, help='number of cpu threads to use during batch generation')
 parser.add_argument('--port', type=int, default=5050)
+parser.add_argument('--use_checkpoint', type=int, default=0, choices=[0, 1])
 opt = parser.parse_args()
 print(opt)
 
@@ -38,10 +39,22 @@ if torch.cuda.is_available() and not opt.cuda:
 
 ###### Definition of variables ######
 # Networks
+
 netG_A2B = Generator(opt.input_nc, opt.output_nc)
 netG_B2A = Generator(opt.output_nc, opt.input_nc)
 netD_A = Discriminator(opt.input_nc)
 netD_B = Discriminator(opt.output_nc)
+
+if bool(opt.use_checkpoint):
+    netG_A2B.load_state_dict(torch.load('./output/netG_A2B.pth'))
+    netG_B2A.load_state_dict(torch.load('./output/netG_B2A.pth'))
+    netD_A.load_state_dict(torch.load('./output/netD_A.pth'))
+    netD_B.load_state_dict(torch.load('./output/netD_B.pth'))
+else:
+    netG_A2B.apply(weights_init_normal)
+    netG_B2A.apply(weights_init_normal)
+    netD_A.apply(weights_init_normal)
+    netD_B.apply(weights_init_normal)
 
 if opt.cuda:
     netG_A2B.cuda()
@@ -49,10 +62,6 @@ if opt.cuda:
     netD_A.cuda()
     netD_B.cuda()
 
-netG_A2B.apply(weights_init_normal)
-netG_B2A.apply(weights_init_normal)
-netD_A.apply(weights_init_normal)
-netD_B.apply(weights_init_normal)
 
 # Lossess
 criterion_GAN = torch.nn.MSELoss()
