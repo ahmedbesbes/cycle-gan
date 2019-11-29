@@ -161,7 +161,7 @@ for epoch in tqdm(range(opt.epoch, opt.n_epochs)):
         # Fake loss
         fake_B = fake_B_buffer.push_and_pop(fake_B)
         pred_fake = netD_B(fake_B.detach())
-        loss_D_fake = criterion_GAN(pred_fake, target_fake)
+        loss_D_fake = criterion_GAN(pred_fake.squeeze(1), target_fake)
 
         # Total loss
         loss_D_B = (loss_D_real + loss_D_fake)*0.5
