@@ -56,6 +56,13 @@ else:
     netD_A.apply(weights_init_normal)
     netD_B.apply(weights_init_normal)
 
+if torch.cuda.device_count() > 1:
+    print("Let's use", torch.cuda.device_count(), "GPUs!")
+    netG_A2B = torch.nn.DataParallel(netG_A2B)
+    netG_B2A = torch.nn.DataParallel(netG_B2A)
+    netD_A = torch.nn.DataParallel(netD_A)
+    netD_B = torch.nn.DataParallel(netD_B)
+
 if opt.cuda:
     netG_A2B.cuda()
     netG_B2A.cuda()
